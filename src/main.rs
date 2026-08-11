@@ -18,7 +18,7 @@ use tokio_retry::{
     strategy::{ExponentialBackoff, jitter},
 };
 
-const MAIN_URL: &str = "https://xsijishe.net";
+const MAIN_URL: &str = "https://xsijishe.com";
 
 #[derive(Parser)]
 #[command(name = "sijishe")]

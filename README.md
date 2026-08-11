@@ -36,7 +36,7 @@ json配置文件内容（可以先运行一次，报错信息会提示工具尝�
 # Usage
 
 - 每个子命令可以通过`-f`参数，使用正则表达式过滤用户名，确定执行操作的账号。
-- `buy`子命令的`thread-id`可以从帖子的 url 中看到，比如 `https://xsijishe.net/thread-888888-1-1.html`，`thread-id`就是中间的`888888`
+- `buy`子命令的`thread-id`可以从帖子的 url 中看到，比如 `https://xsijishe.com/thread-888888-1-1.html`，`thread-id`就是中间的`888888`
 
 ## 具体运行效果：
 ### 签到：
