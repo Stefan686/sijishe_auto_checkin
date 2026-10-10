@@ -1,0 +1,29 @@
+name: 司机社每日自动签到
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "20 0 * * *"
+
+jobs:
+  checkin:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 获取代码
+        uses: actions/checkout@v4
+
+      - name: 安装 Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: 配置登录账号
+        env:
+          ACCOUNTS_JSON: ${{ secrets.ACCOUNTS_JSON }}
+        run: |
+          mkdir -p ~/.config/sijishe
+          printf '%s' "$ACCOUNTS_JSON" \
+            > ~/.config/sijishe/accounts.json
+          chmod 600 ~/.config/sijishe/accounts.json
+
+      - name: 编译并执行签到
+        run: cargo run --release -- checkin
