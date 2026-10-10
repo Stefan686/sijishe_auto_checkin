@@ -1,29 +1,59 @@
+
 name: 司机社每日自动签到
 
 on:
   workflow_dispatch:
   schedule:
+    # 每天北京时间 08:20
     - cron: "20 0 * * *"
+
+permissions:
+  contents: read
 
 jobs:
   checkin:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
+      # 1. 获取仓库代码
       - name: 获取代码
         uses: actions/checkout@v4
 
+      # 2. 安装 Rust 环境
       - name: 安装 Rust
         uses: dtolnay/rust-toolchain@stable
 
+      # 3. 配置司机社账号
       - name: 配置登录账号
         env:
           ACCOUNTS_JSON: ${{ secrets.ACCOUNTS_JSON }}
         run: |
+          if [ -z "$ACCOUNTS_JSON" ]; then
+            echo "::error::未设置 ACCOUNTS_JSON"
+            exit 1
+          fi
+
           mkdir -p ~/.config/sijishe
-          printf '%s' "$ACCOUNTS_JSON" \
-            > ~/.config/sijishe/accounts.json
+          printf '%s' "$ACCOUNTS_JSON" > ~/.config/sijishe/accounts.json
           chmod 600 ~/.config/sijishe/accounts.json
 
+      # 4. 编译并执行签到
       - name: 编译并执行签到
-        run: cargo run --release -- checkin
+        shell: bash
+        run: |
+          set -o pipefail
+
+          cargo run --release -- checkin 2>&1 | tee checkin.log
+
+          if grep -Eq "Error processing|Login failed|Check-in failed|No accounts found" checkin.log; then
+            echo "::error::司机社签到失败，请检查登录或网站验证"
+            exit 1
+          fi
+
+          if grep -Eq "Check-in successful!|Already checked in today." checkin.log; then
+            echo "司机社签到成功或今日已签到"
+          else
+            echo "::error::未检测到明确的签到成功信息"
+            exit 1
+          fi
